@@ -13,6 +13,7 @@ from flask_mail import Message
 @app.route("/")
 @app.route("/home")
 def home():
+    ''' This route will return Homepage and paginates news feed content '''
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
     return render_template('home.html', posts=posts)
@@ -20,11 +21,13 @@ def home():
 
 @app.route("/about")
 def about():
+    ''' This route will return about '''
     return render_template('about.html', title='About')
 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    ''' This route returns registeration page and asks for users input '''
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = RegistrationForm()
@@ -40,6 +43,7 @@ def register():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    ''' This route returns login page and asks for users input '''
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = LoginForm()
@@ -56,11 +60,13 @@ def login():
 
 @app.route("/logout")
 def logout():
+    ''' This route returns home page after user clicks logout '''
     logout_user()
     return redirect(url_for('home'))
 
 
 def save_picture(form_picture):
+    ''' This method allows user to upload their pictues and formats output size '''
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -77,6 +83,7 @@ def save_picture(form_picture):
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
 def account():
+    ''' This route allows user to update their profile account'''
     form = UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
@@ -98,6 +105,7 @@ def account():
 @app.route("/post/new", methods=['GET', 'POST'])
 @login_required
 def new_post():
+    ''' users are able to create neew post'''
     form = PostForm()
     if form.validate_on_submit():
         post = Post(title=form.title.data, content=form.content.data, author=current_user)
@@ -118,6 +126,7 @@ def post(post_id):
 @app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
 @login_required
 def update_post(post_id):
+    '''users are able to update their post only if it's their account'''
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(403)
@@ -138,6 +147,7 @@ def update_post(post_id):
 @app.route("/post/<int:post_id>/delete", methods=['POST'])
 @login_required
 def delete_post(post_id):
+    ''' users are able to delete their own post '''
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(403)
