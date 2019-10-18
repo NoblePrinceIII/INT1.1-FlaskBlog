@@ -119,6 +119,7 @@ def new_post():
 
 @app.route("/post/<int:post_id>")
 def post(post_id):
+    ''' returns post.html and gives 404 error if not post id'''
     post = Post.query.get_or_404(post_id)
     return render_template('post.html', title=post.title, post=post)
 
@@ -159,6 +160,7 @@ def delete_post(post_id):
 
 @app.route("/user/<string:username>")
 def user_posts(username):
+    ''' allows users to look at other specific users code '''
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
     posts = Post.query.filter_by(author=user)\
@@ -166,8 +168,9 @@ def user_posts(username):
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
 
-
+   
 def send_reset_email(user):
+    ''' allows user to send reset email '''
     token = user.get_reset_token()
     msg = Message('Password Reset Request',
                   sender='noreply@demo.com',
@@ -181,6 +184,7 @@ If you did not make this request then simply ignore this email and no changes wi
 
 @app.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
+    ''' allows user to request reset password '''
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = RequestResetForm()
@@ -194,6 +198,7 @@ def reset_request():
 
 @app.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
+    ''' allows user to request reset token '''
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     user = User.verify_reset_token(token)
